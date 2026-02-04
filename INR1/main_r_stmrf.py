@@ -20,29 +20,22 @@ from inr_modules.r_stmrf.train_r_stmrf import train_r_stmrf
 
 def main():
     """主函数"""
-    print("\n" + "="*70)
-    print("R-STMRF: 物理引导的循环时空调制残差场")
-    print("Recurrent Spatio-Temporal Modulated Residual Field")
-    print("电离层电子密度三维重构")
-    print("="*70 + "\n")
-
     # 获取配置
     config = get_config_r_stmrf()
-    print_config_r_stmrf()
 
     # ==================== 1. 训练模型 ====================
-    print("\n" + "="*70)
+    print("\n" + "="*7)
     print("阶段 1: 模型训练")
-    print("="*70 + "\n")
+    print("="*7 + "\n")
 
     model, train_losses, val_losses, train_loader, val_loader, sw_manager, tec_manager, gradient_bank, batch_processor = train_r_stmrf(config)
 
     device = torch.device(config['device'])
 
     # ==================== 2. 评估模型 ====================
-    print("\n" + "="*70)
+    print("\n" + "="*7)
     print("阶段 2: 模型评估")
-    print("="*70 + "\n")
+    print("="*7 + "\n")
 
     # 加载最佳模型
     best_model_path = os.path.join(config['save_dir'], 'best_r_stmrf_model.pth')
@@ -50,7 +43,7 @@ def main():
         model.load_state_dict(torch.load(best_model_path, map_location=device))
         print(f"✓ 已加载最佳模型: {best_model_path}")
     else:
-        print("⚠️  警告: 未找到最佳模型，使用当前模型")
+        print("警告: 未找到最佳模型，使用当前模型")
 
     # 详细评估
     print("\n[2.1] 计算详细评估指标...")
@@ -66,9 +59,9 @@ def main():
     )
 
     # ==================== 3. 可视化结果 ====================
-    print("\n" + "="*70)
+    print("\n" + "="*7)
     print("阶段 3: 可视化")
-    print("="*70 + "\n")
+    print("="*7 + "\n")
 
     # 绘制损失曲线
     print("[3.1] 绘制损失曲线...")
@@ -128,10 +121,10 @@ def main():
             )
 
     # ==================== 4. 完成 ====================
-    print("\n" + "="*70)
+    print("\n" + "="*7)
     print("所有任务完成!")
     print(f"结果保存在: {os.path.abspath(config['save_dir'])}")
-    print("="*70 + "\n")
+    print("="*7 + "\n")
 
     print("生成的文件:")
     print("  [模型权重]")

@@ -18,10 +18,7 @@ _CUDA_AVAILABLE = torch.cuda.is_available()
 _DEVICE = 'cuda' if _CUDA_AVAILABLE else 'cpu'
 
 if _CUDA_AVAILABLE:
-    print(f"✓ CUDA detected: {torch.cuda.get_device_name(0)}")
-    print(f"  CUDA version: {torch.version.cuda}")
-    print(f"  GPU memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.2f} GB")
-
+    print("  ✓ GPU optimizations enabled")
     # GPU优化配置
     _BATCH_SIZE = 4096  # 增大batch提高GPU利用率
     _NUM_WORKERS = 4  # 多进程数据加载
@@ -29,10 +26,9 @@ if _CUDA_AVAILABLE:
     _PIN_MEMORY = True  # 启用pin memory加速CPU-GPU传输
     _PREFETCH_FACTOR = 2  # 预取2个batch
     _PERSISTENT_WORKERS = True  # 保持worker进程
-    print("  ✓ GPU optimizations enabled")
-else:
-    print("⚠️  CUDA not available, using CPU")
 
+else:
+    print("  ✓ CPU optimizations enabled")
     # CPU配置
     _BATCH_SIZE = 2048
     _NUM_WORKERS = 2  # CPU也启用多进程
@@ -40,7 +36,7 @@ else:
     _PIN_MEMORY = False
     _PREFETCH_FACTOR = 2
     _PERSISTENT_WORKERS = False
-    print("  ✓ CPU optimizations enabled")
+
 
 CONFIG_R_STMRF = {
     # ==================== 数据路径 ====================
@@ -54,8 +50,8 @@ CONFIG_R_STMRF = {
     # ==================== 数据规格 ====================
     'total_hours': 720.0,  # 总时长（小时）
     'start_date_str': '2024-09-01 00:00:00',  # 起始时间
-    'time_res': 3.0,  # IRI 时间分辨率（小时）
-    'bin_size_hours': 3.0,  # 时间分箱大小（小时）
+    'time_res': 0.5,  # IRI 时间分辨率（小时）
+    'bin_size_hours': 0.5,  # 时间分箱大小（小时）
 
     # ==================== 物理参数 ====================
     'lat_range': (-90.0, 90.0),  # 纬度范围
@@ -86,7 +82,7 @@ CONFIG_R_STMRF = {
     'batch_size': _BATCH_SIZE,  # 批次大小（自动调整：GPU=4096, CPU=2048）
     'lr': 3e-4,  # 学习率
     'weight_decay': 1e-4,  # 权重衰减
-    'epochs': 2,  # 训练轮数
+    'epochs': 6,  # 训练轮数
     'seed': 42,
     'device': _DEVICE,  # 自动检测 CUDA
     'num_workers': _NUM_WORKERS,  # 多进程数据加载（自动调整：GPU=4, CPU=2）
@@ -127,11 +123,11 @@ CONFIG_R_STMRF = {
     'log_var_regularization': 0.001,  # log_var 正则化权重（惩罚极端方差，鼓励接近 1）
 
     # ==================== 模型保存 ====================
-    'save_interval': 2,  # 每隔多少个 epoch 保存一次模型
+    'save_interval': 3,  # 每隔多少个 epoch 保存一次模型
     'save_best_only': True,  # 是否只保存最佳模型
 
     # ==================== 可视化 ====================
-    'plot_interval': 2,  # 每隔多少个 epoch 绘制可视化
+    'plot_interval': 3,  # 每隔多少个 epoch 绘制可视化
     'plot_days': [5, 15, 25],  # 绘制哪些天的高度剖面
     'plot_hours': [0.0, 6.0, 12.0, 18.0],  # 绘制哪些时刻
 
@@ -164,9 +160,9 @@ def update_config_r_stmrf(**kwargs):
 
 def print_config_r_stmrf():
     """打印当前配置"""
-    print("\n" + "="*70)
+    print("\n" + "="*7)
     print("R-STMRF 配置参数")
-    print("="*70)
+    print("="*7)
 
     # 分类打印
     categories = {
@@ -194,7 +190,7 @@ def print_config_r_stmrf():
                 value = CONFIG_R_STMRF[key]
                 print(f"  {key:30s}: {value}")
 
-    print("\n" + "="*70 + "\n")
+    print("\n" + "="*7 + "\n")
 
 
 def validate_config():
@@ -206,7 +202,7 @@ def validate_config():
     for path_key in required_paths:
         path = config[path_key]
         if not os.path.exists(path):
-            print(f"⚠️  警告: {path_key} 路径不存在: {path}")
+            print(f"警告: {path_key} 路径不存在: {path}")
 
     # 检查参数合理性
     assert config['seq_len'] > 0, "seq_len 必须大于 0"

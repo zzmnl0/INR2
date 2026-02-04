@@ -111,7 +111,7 @@ def train_one_epoch(model, train_loader, batch_processor, gradient_bank, optimiz
     use_uncertainty = config.get('use_uncertainty', True) and (epoch >= warmup_epochs)
 
     if epoch < warmup_epochs and config.get('use_uncertainty', True):
-        print(f"  [Warm-up] Epoch {epoch+1}/{warmup_epochs}: 使用 MSE+物理损失（关闭不确定性）")
+        print(f"  [Warm-up] Epoch {epoch+1}/{warmup_epochs}: 使用 MSE+物理损失")
 
     # 统计变量
     total_loss = 0.0
@@ -345,10 +345,10 @@ def train_r_stmrf(config):
     np.random.seed(config['seed'])
 
     device = torch.device(config['device'])
-    print(f"\n{'='*70}")
+    print(f"\n{'='*7}")
     print(f"R-STMRF 训练流程")
     print(f"使用设备: {device}")
-    print(f"{'='*70}\n")
+    print(f"{'='*7}\n")
 
     # ==================== 1. 初始化数据管理器 ====================
     print("[步骤 1] 初始化数据管理器...")
@@ -387,9 +387,9 @@ def train_r_stmrf(config):
     # 内存映射设置
     use_memmap = config.get('use_memmap', False)
     if use_memmap:
-        print(f"  ✓ 启用Memory-Mapped加载 - 按需从磁盘读取，大幅减少内存占用")
+        print(f"  按需从磁盘读取")
     else:
-        print(f"  使用全量加载模式 - 一次性加载到内存（更快但内存占用大）")
+        print(f"  一次性加载到内存")
 
     # 加载全部数据
     full_dataset = FY3D_Dataset(
@@ -413,9 +413,7 @@ def train_r_stmrf(config):
         full_dataset, [train_size, val_size], generator=generator
     )
 
-    # 创建时间分箱 Sampler（优化 ConvLSTM 内存使用）
     # 通过时间分箱，确保每个 batch 内的样本来自相似的时间窗口
-    # 这样可以最大化唯一时间窗口的重复率，减少 ConvLSTM 的重复计算
     train_sampler = SubsetTimeBinSampler(
         train_dataset,
         batch_size=config['batch_size'],
@@ -435,7 +433,6 @@ def train_r_stmrf(config):
     # - prefetch_factor: 预取batch数量
     # - persistent_workers: 保持worker进程（减少启动开销）
     dataloader_kwargs = {
-        'batch_sampler': None,  # 会在下面设置
         'num_workers': config.get('num_workers', 0),
         'pin_memory': config.get('pin_memory', device.type == 'cuda'),
     }
@@ -458,7 +455,6 @@ def train_r_stmrf(config):
     )
 
     print(f"  训练批次: {len(train_loader)} | 验证批次: {len(val_loader)}")
-    print(f"  使用时间分箱策略优化 ConvLSTM 内存使用")
 
     # 创建批次处理器
     batch_processor = SlidingWindowBatchProcessor(sw_manager, tec_manager, device)
@@ -495,9 +491,6 @@ def train_r_stmrf(config):
     )
 
     print(f"  ✓ TEC 梯度库加载成功")
-    print(f"  ✓ 使用内存映射（Memory-Mapped）模式，RAM 占用 < 10 MB")
-    print(f"  ✓ 支持余弦平方插值，保证 C1 连续性")
-    print(f"  ✓ 完全消除 ConvLSTM 在线计算开销")
 
     # ==================== 5. 优化器和调度器 ====================
     print("\n[步骤 5] 配置优化器...")
@@ -524,28 +517,26 @@ def train_r_stmrf(config):
     if use_amp:
         if device.type == 'cuda':
             scaler = torch.cuda.amp.GradScaler()
-            print(f"  ✓ 启用混合精度训练（AMP）- 加速训练并节省显存")
-            print(f"  ⚠️ Chapman损失（二阶导数）将强制使用float32以避免数值不稳定")
+            print(f"  启用混合精度训练（AMP）")
         else:
-            print(f"  ⚠️ AMP仅支持CUDA设备，已禁用")
+            print(f"  AMP仅支持CUDA设备，已禁用")
             use_amp = False
 
     # ==================== 6. 训练循环 ====================
     print("\n[步骤 6] 开始训练...")
     physics_freq = config.get('physics_loss_freq', 10)
     if physics_freq > 1:
-        print(f"  ⚡ 物理损失间歇性计算：每 {physics_freq} 个batch计算一次（加速训练）")
-        print(f"  ⚡ 预期加速: ~{physics_freq/2:.1f}× 梯度计算减少")
+        print(f"  物理损失每 {physics_freq} 个batch计算一次")
     else:
-        print(f"  📊 物理损失每个batch计算（physics_loss_freq=1）")
+        print(f"  物理损失每个batch计算一次")
 
     # 不确定性 Warm-up 提示
     warmup_epochs = config.get('uncertainty_warmup_epochs', 5)
     if config.get('use_uncertainty', True):
-        print(f"  🔥 不确定性 Warm-up: 前 {warmup_epochs} 个 epoch 使用纯 MSE")
-        print(f"     之后启用异方差损失（NLL），学习预测方差")
+        print(f"  前 {warmup_epochs} 个 epoch 使用纯 MSE")
+        print(f"  之后启用异方差损失（NLL），学习预测方差")
 
-    print(f"{'='*70}\n")
+    print(f"{'='*7}\n")
 
     # 训练历史记录
     train_losses = []
@@ -558,9 +549,9 @@ def train_r_stmrf(config):
     from .plotting import plot_training_curves_3panel
 
     for epoch in range(config['epochs']):
-        print(f"\n{'='*70}")
+        print(f"\n{'='*7}")
         print(f"Epoch {epoch+1}/{config['epochs']}")
-        print(f"{'='*70}")
+        print(f"{'='*7}")
 
         # 训练
         train_loss, train_dict = train_one_epoch(
@@ -651,7 +642,6 @@ def train_r_stmrf(config):
 if __name__ == '__main__':
     # 获取配置
     config = get_config_r_stmrf()
-    print_config_r_stmrf()
 
     # 开始训练
     model, train_losses, val_losses, train_loader, val_loader, sw_manager, tec_manager = train_r_stmrf(config)
