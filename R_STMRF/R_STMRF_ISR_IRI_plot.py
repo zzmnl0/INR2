@@ -30,15 +30,15 @@ import warnings
 
 warnings.filterwarnings('ignore', category=RuntimeWarning)
 
-# Add INR1 module path to sys.path for imports
+# Add inr_modules path to sys.path for imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
-inr1_module_path = os.path.join(current_dir, 'INR1', 'inr_modules')
-if inr1_module_path not in sys.path:
-    sys.path.insert(0, inr1_module_path)
+inr_module_path = os.path.join(current_dir, 'inr_modules')
+if inr_module_path not in sys.path:
+    sys.path.insert(0, inr_module_path)
 
 # Verify path exists
-if not os.path.exists(inr1_module_path):
-    raise RuntimeError(f"INR1 module path not found: {inr1_module_path}")
+if not os.path.exists(inr_module_path):
+    raise RuntimeError(f"inr_modules path not found: {inr_module_path}")
 
 # Import R-STMRF components
 try:
@@ -49,9 +49,9 @@ try:
     from data_managers.tec_manager import TECDataManager
     from data_managers.irinc_neural_proxy import IRINeuralProxy
 except ImportError as e:
-    print(f"Error importing modules. Make sure you're running from the correct directory.")
+    print(f"Error importing modules. Make sure you're running from the R_STMRF directory.")
     print(f"Current directory: {current_dir}")
-    print(f"INR1 module path: {inr1_module_path}")
+    print(f"inr_modules path: {inr_module_path}")
     print(f"sys.path: {sys.path}")
     raise
 
@@ -64,7 +64,7 @@ CONFIG = {
     'sw_path': r'D:\FYsatellite\EDP_data\kp\OMNI_Kp_F107_20240901_20241001.txt',
     'tec_path': r'D:\IGS\VTEC\tec_map_data.npy',
     'gradient_bank_path': r'D:\IGS\VTEC\tec_gradient_bank.npy',  # 新增：预计算的 TEC 梯度库
-    'model_weights': r"./checkpoints_r_stmrf/best_r_stmrf_model.pth",
+    'model_weights': r"D:\code11\IRI01\IRI03\INR1-1\checkpoints_r_stmrf\3-epoch6\best_r_stmrf_model.pth",
     'isr_filepath': r'D:\ISR\DATA\10jicamarca_is_radar(~12°S,低纬磁赤道)\jro20240905_050002.hdf5',
 
     # Global settings

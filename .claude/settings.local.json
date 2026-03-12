@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(BASE=\"/d/code11/IRI01/IRI03/INR1-1\")",
+      "Read(//d/code11/IRI01/IRI03/INR1-1/**)",
+      "Read(//d/code11/IRI01/IRI03/INR1-1/$BASE/**)",
+      "Bash(BASE=\"D:/code11/IRI01/IRI03/INR1-1\")"
+    ]
+  }
+}

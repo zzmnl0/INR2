@@ -82,14 +82,14 @@ CONFIG_R_STMRF = {
     'batch_size': _BATCH_SIZE,  # 批次大小（自动调整：GPU=4096, CPU=2048）
     'lr': 3e-4,  # 学习率
     'weight_decay': 1e-4,  # 权重衰减
-    'epochs': 6,  # 训练轮数
+    'epochs': 10,  # 训练轮数
     'seed': 42,
     'device': _DEVICE,  # 自动检测 CUDA
     'num_workers': _NUM_WORKERS,  # 多进程数据加载（自动调整：GPU=4, CPU=2）
     'pin_memory': _PIN_MEMORY,  # Pin memory加速CPU-GPU传输
     'prefetch_factor': _PREFETCH_FACTOR,  # 预取batch数量
     'persistent_workers': _PERSISTENT_WORKERS,  # 保持worker进程（减少启动开销）
-    'use_memmap': False,  # 是否使用内存映射按需加载数据（节省内存，略慢）
+    'use_memmap': True,  # 是否使用内存映射按需加载数据（节省内存，略慢）
                           # True: Memory-mapped loading (低内存占用，适合大数据集)
                           # False: 全量加载到内存 (高性能，需要足够内存)
 
